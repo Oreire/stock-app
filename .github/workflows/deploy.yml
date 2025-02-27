@@ -29,6 +29,7 @@ jobs:
         ssh-private-key: "${{ secrets.SSH_PRIVATE_KEY }}"
 
     - name: Run Ansible Playbook
+      if: github.ref == 'refs/heads/main'
       run: ansible-playbook /ansibleplay/manage.yml
       env:
         ANSIBLE_HOST_KEY_CHECKING: 'false'
