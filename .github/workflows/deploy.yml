@@ -43,8 +43,8 @@ jobs:
       - name: Run Ansible Playbook
         if: github.ref == 'refs/heads/main'
         run: |
-            cd ansibleplay
-            ansible-playbook -i manage.yml
+            cd stock-app
+            ansible-playbook -i /ansibleplay/inventory.ini /ansibleplay/manage.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: 'false'
 
