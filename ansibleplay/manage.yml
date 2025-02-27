@@ -1,0 +1,44 @@
+---
+- hosts: stock_servers
+  become: yes
+  gather_facts: true
+  tasks:
+    - name: Update all packages (Amazon Linux)
+      ansible.builtin.yum:
+        name: '*'
+        state: latest
+      when: ansible_facts['distribution'] in ['Amazon']
+
+    - name: Install Git (Amazon Linux)
+      ansible.builtin.yum:
+        name: git
+        state: present
+      when: ansible_facts['distribution'] in ['Amazon']
+
+    - name: Install tree (Amazon Linux)
+      ansible.builtin.yum:
+        name: tree
+        state: present
+      when: ansible_facts['distribution'] in ['Amazon']
+
+    - name: Clone Git repository
+      ansible.builtin.git:
+        repo: 'https://github.com/Oreire/stock-price-app.git'
+        dest: /home/{{ ansible_facts['ansible_user'] }}/stock-price-app
+        version: 'main'
+
+    - name: Ensure Docker is installed (Amazon Linux)
+      ansible.builtin.yum:
+        name: docker
+        state: present
+      when: ansible_facts['distribution'] in ['Amazon']
+
+    - name: Ensure Docker Compose is installed
+      ansible.builtin.pip:
+        name: docker-compose
+        state: present
+
+    - name: Start services using Docker Compose
+      ansible.builtin.command:
+        cmd: docker-compose up -d --build --force-recreate
+        chdir: /home/{{ ansible_facts['ansible_user'] }}/stock-price-app

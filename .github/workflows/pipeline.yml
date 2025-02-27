@@ -1,0 +1,39 @@
+name: Deploy AWS Infrastructure
+
+on:
+  push:
+    branches:
+      - main
+env:
+    AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY_ID }}
+    AWS_DEFAULT_REGION: "eu-west-2"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.0
+      - name: Change directory to Infra on the C drive
+        run: cd  Infra 
+      - name: Terraform Init
+        run: |
+            cd Infra
+            terraform init
+
+      - name: Terraform Plan
+        run: |
+            cd Infra
+            terraform plan 
+
+      - name: Terraform Apply
+        run: |
+            cd Infra
+            terraform apply -auto-approve
