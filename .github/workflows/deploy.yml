@@ -1,50 +1,51 @@
-# name: Deploy Ansible Playbook
+name: Deploy Ansible Playbook
 
-# on:
-#   push:
-#     branches:
-#       - main
 
-# env:
-#   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY_ID }}
-#   AWS_DEFAULT_REGION: "eu-west-2"
+on:
+  push:
+    branches:
+      - main
 
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY_ID }}
+  AWS_DEFAULT_REGION: "eu-west-2"
 
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v2
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-#       - name: Set up Python
-#         uses: actions/setup-python@v4
-#         with:
-#           python-version: '3.x'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-#       - name: Install Ansible
-#         run: |
-#           python -m pip install --upgrade pip
-#           pip install ansible
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
-#       - name: Setup SSH
-#         run: |
-#           mkdir -p ~/.ssh
-#           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-#           chmod 600 ~/.ssh/id_rsa
-#           ssh-keyscan github.com >> ~/.ssh/known_hosts
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible
 
-#       - name: Start SSH Agent
-#         uses: webfactory/ssh-agent@v0.5.3
-#         with:
-#           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
 
-#       - name: Run Ansible Playbook
-#         if: github.ref == 'refs/heads/main'
-#         run: |
-#            cd ansibleplay
-#            ansible-playbook -i inventory.ini manage.yml
-#         env:
-#           ANSIBLE_HOST_KEY_CHECKING: 'false'
+      - name: Start SSH Agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Run Ansible Playbook
+        if: github.ref == 'refs/heads/main'
+        run: |
+           cd ansibleplay
+           ansible-playbook -i inventory.ini manage.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: 'false'
 
