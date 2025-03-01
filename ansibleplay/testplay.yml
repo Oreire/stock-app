@@ -1,0 +1,80 @@
+---
+- name: Complete setup for managed nodes and stock servers
+  hosts: all
+  become: yes  # Use become for root privileges when modifying SSH-related files
+  tasks:
+    # Step 1: Generate SSH Key Pair on Ansible Console Node
+    - name: Generate SSH key pair on the Ansible console node
+      community.crypto.openssh_keypair:
+        path: /tmp/ansible_ssh_key  # Specify the path to store the private key
+        type: ed25519
+        state: present
+      delegate_to: localhost  # Perform key generation on the Ansible console node
+      run_once: true
+      register: keypair
+
+    # Step 2: Ensure .ssh Directory Exists on Managed Nodes
+    - name: Ensure .ssh directory exists on managed nodes
+      file:
+        path: ~/.ssh
+        state: directory
+        mode: '0700'
+
+    # Step 3: Copy Public Key to Managed Nodes
+    - name: Copy public key to managed nodes
+      authorized_key:
+        user: "{{ ansible_user | default('your_user') }}"  # Replace 'your_user' with the correct username
+        state: present
+        key: "{{ keypair.public_key }}"
+
+- name: Configure stock_servers and deploy application
+  hosts: stock_servers
+  become: yes  # Use become for elevated permissions
+  gather_facts: true  # Collect system facts
+  tasks:
+    # Step 1: Update All Packages
+    - name: Update all packages (Amazon Linux)
+      ansible.builtin.yum:
+        name: '*'
+        state: latest
+      when: ansible_facts['distribution'] in ['Amazon']
+
+    # Step 2: Install Git
+    - name: Install Git (Amazon Linux)
+      ansible.builtin.yum:
+        name: git
+        state: present
+      when: ansible_facts['distribution'] in ['Amazon']
+
+    # Step 3: Install Tree
+    - name: Install tree (Amazon Linux)
+      ansible.builtin.yum:
+        name: tree
+        state: present
+      when: ansible_facts['distribution'] in ['Amazon']
+
+    # Step 4: Clone the Git Repository
+    - name: Clone Git repository
+      ansible.builtin.git:
+        repo: 'https://github.com/Oreire/stock-price-app.git'
+        dest: /home/{{ ansible_facts['ansible_user'] }}/stock-price-app
+        version: 'main'
+
+    # Step 5: Ensure Docker is Installed
+    - name: Ensure Docker is installed (Amazon Linux)
+      ansible.builtin.yum:
+        name: docker
+        state: present
+      when: ansible_facts['distribution'] in ['Amazon']
+
+    # Step 6: Ensure Docker Compose is Installed
+    - name: Ensure Docker Compose is installed
+      ansible.builtin.pip:
+        name: docker-compose
+        state: present
+
+    # Step 7: Start Services Using Docker Compose
+    - name: Start services using Docker Compose
+      ansible.builtin.command:
+        cmd: docker-compose up -d --build --force-recreate
+        chdir: /home/{{ ansible_facts['ansible_user'] }}/stock-price-app

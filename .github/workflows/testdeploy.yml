@@ -1,0 +1,38 @@
+name: Run Ansible Playbook
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  ansible-deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the Repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Step 2: Install Required Dependencies
+    - name: Install Ansible
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ansible
+    # Install community.crypto collection
+    - name: Install community.crypto collection
+      run: ansible-galaxy collection install community.crypto
+
+    # Step 3: Prepare Inventory File
+    - name: Setup Inventory
+      run: |
+        echo "[stock_servers]" > inventory
+        echo "3.8.147.123 ansible_user=ec2-user" >> inventory
+        echo "13.40.216.152 ansible_user=ec2-user" >> inventory
+        echo "13.42.41.219 ansible_user=ec2-user" >> inventory
+
+    # Step 4: Run the Integrated Ansible Playbook
+    - name: Run Ansible Playbook
+      run: |
+        cd ansibleplay
+        ansible-playbook -i inventory.ini testplay.yml
