@@ -24,12 +24,12 @@ jobs:
       run: ansible-galaxy collection install community.crypto
 
     # Step 3: Prepare Inventory File
-    - name: Setup Inventory
-      run: |
-        echo "[stock_servers]" > inventory
-        echo "3.8.147.123 ansible_user=ec2-user" >> inventory
-        echo "13.40.216.152 ansible_user=ec2-user" >> inventory
-        echo "13.42.41.219 ansible_user=ec2-user" >> inventory
+    #- name: Setup Inventory
+    #  run: |
+    #    echo "[stock_servers]" > inventory
+    #    echo "3.8.147.123 ansible_user=ec2-user" >> inventory
+    #    echo "13.40.216.152 ansible_user=ec2-user" >> inventory
+    #    echo "13.42.41.219 ansible_user=ec2-user" >> inventory
 
     # Step 4: Run the Integrated Ansible Playbook
     - name: Run Ansible Playbook
