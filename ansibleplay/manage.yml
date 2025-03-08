@@ -26,10 +26,21 @@
         state: present
       when: ansible_facts['distribution'] in ['Amazon']
 
-    - name: Downgrade docker package
-      ansible.builtin.pip:
-        name: docker==6.1.3
-        state: present
+    - name: Install Docker from official repository
+      ansible.builtin.shell: |
+        amazon-linux-extras install docker
+        systemctl start docker
+        systemctl enable docker
+
+    - name: Install Docker Compose from GitHub release
+      ansible.builtin.shell: |
+        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+        ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+    - name: Verify Docker Compose installation
+      ansible.builtin.command:
+        cmd: docker-compose --version
 
     - name: Clone Git repository
       ansible.builtin.git:
@@ -37,47 +48,13 @@
         dest: "{{ ansible_env.HOME }}/stock-price-app"
         version: 'main'
 
-    - name: Ensure Docker is installed (Amazon Linux)
-      ansible.builtin.yum:
-        name: docker
-        state: present
-      when: ansible_facts['distribution'] in ['Amazon']
-    
     - name: Start Docker service
       ansible.builtin.service:
         name: docker
         state: started
       when: ansible_facts['distribution'] in ['Amazon']
 
-    - name: Install Docker Compose using pip
-      ansible.builtin.pip:
-        name: docker-compose
-        extra_args: --ignore-installed requests
-        state: present
-      when: ansible_facts['distribution'] in ['Amazon']
-
-    - name: Verify Docker Compose installation
-      ansible.builtin.command:
-        cmd: docker-compose --version
-
-    - name: Export Docker environment variables
-      ansible.builtin.shell: |
-        export DOCKER_API_VERSION=1.41
-        export DOCKER_HOST=unix:///var/run/docker.sock
-        export DOCKER_TLS_VERIFY=1
-        export DOCKER_CERT_PATH=/etc/docker
-      environment:
-        DOCKER_API_VERSION: "1.41"
-        DOCKER_HOST: "unix:///var/run/docker.sock"
-        DOCKER_TLS_VERIFY: "1"
-        DOCKER_CERT_PATH: "/etc/docker"
-
     - name: Start services using Docker Compose
       ansible.builtin.command:
         cmd: docker-compose up -d --build --force-recreate
         chdir: "{{ ansible_env.HOME }}/stock-price-app"
-      environment:
-        DOCKER_API_VERSION: "1.41"
-        DOCKER_HOST: "unix:///var/run/docker.sock"
-        DOCKER_TLS_VERIFY: "1"
-        DOCKER_CERT_PATH: "/etc/docker"
