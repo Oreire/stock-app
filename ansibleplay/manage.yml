@@ -48,6 +48,7 @@
     - name: Ensure Docker Compose is installed
       ansible.builtin.pip:
         name: docker-compose
+        extra_args: --ignore-installed requests
         state: present
       when: ansible_facts['distribution'] in ['Amazon']
 
