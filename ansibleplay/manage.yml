@@ -32,11 +32,18 @@
         name: docker
         state: present
       when: ansible_facts['distribution'] in ['Amazon']
+    
+    - name: Start Docker service
+      ansible.builtin.service:
+        name: docker
+        state: started
+      when: ansible_facts['distribution'] in ['Amazon']
 
     - name: Ensure Docker Compose is installed
       ansible.builtin.pip:
         name: docker-compose
         state: present
+      when: ansible_facts['distribution'] in ['Amazon']
 
     - name: Start services using Docker Compose
       ansible.builtin.command:
