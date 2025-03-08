@@ -38,6 +38,13 @@
         chmod +x /usr/local/bin/docker-compose
         ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
+    - name: Create symbolic link for Docker Compose
+      ansible.builtin.file:
+        src: /usr/local/bin/docker-compose
+        dest: /usr/bin/docker-compose
+        state: link
+      when: ansible_facts['distribution'] in ['Amazon']
+
     - name: Verify Docker Compose installation
       ansible.builtin.command:
         cmd: docker-compose --version
