@@ -26,11 +26,29 @@
         state: present
       when: ansible_facts['distribution'] in ['Amazon']
 
-    - name: Install Docker from official repository
-      ansible.builtin.shell: |
-        amazon-linux-extras install docker
-        systemctl start docker
-        systemctl enable docker
+    - name: Install Docker (Amazon Linux)
+      ansible.builtin.yum:
+        name: docker
+        state: present
+      when: ansible_facts['distribution'] in ['Amazon']
+
+    - name: Start Docker service
+      ansible.builtin.service:
+        name: docker
+        state: started
+      when: ansible_facts['distribution'] in ['Amazon']
+
+    - name: Enable Docker service at boot
+      ansible.builtin.systemd:
+        name: docker
+        enabled: yes
+      when: ansible_facts['distribution'] in ['Amazon']
+
+    # - name: Install Docker from official repository
+    #   ansible.builtin.shell: |
+    #     amazon-linux-extras install docker
+    #     systemctl start docker
+    #     systemctl enable docker
 
     - name: Install Docker Compose from GitHub release
       ansible.builtin.shell: |
@@ -48,11 +66,11 @@
         dest: "{{ ansible_env.HOME }}/stock-price-app"
         version: 'main'
 
-    - name: Start Docker service
-      ansible.builtin.service:
-        name: docker
-        state: started
-      when: ansible_facts['distribution'] in ['Amazon']
+    # - name: Start Docker service
+    #   ansible.builtin.service:
+    #     name: docker
+    #     state: started
+    #   when: ansible_facts['distribution'] in ['Amazon']
 
     - name: Start services using Docker Compose
       ansible.builtin.command:
