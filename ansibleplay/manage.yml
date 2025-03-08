@@ -57,6 +57,13 @@
         state: present
       when: ansible_facts['distribution'] in ['Amazon']
 
+    - name: Export Docker environment variables
+      ansible.builtin.shell: |
+        export DOCKER_API_VERSION=1.41
+        export DOCKER_HOST=unix:///var/run/docker.sock
+        export DOCKER_TLS_VERIFY=1
+        export DOCKER_CERT_PATH=/etc/docker
+
     - name: Start services using Docker Compose
       ansible.builtin.command:
         cmd: docker-compose up -d --build --force-recreate
