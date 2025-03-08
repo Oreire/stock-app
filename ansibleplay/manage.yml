@@ -27,6 +27,11 @@
         state: present
       when: ansible_facts['distribution'] in ['Amazon']
 
+    - name: Downgrade docker package
+      ansible.builtin.pip:
+        name: docker==6.1.3
+        state: present
+
     - name: Clone Git repository
       ansible.builtin.git:
         repo: 'https://github.com/Oreire/stock-price-app.git'
@@ -56,3 +61,4 @@
       ansible.builtin.command:
         cmd: docker-compose up -d --build --force-recreate
         chdir: /home/{{ ansible_env.HOME }}/stock-price-app
+
